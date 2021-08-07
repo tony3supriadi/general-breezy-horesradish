@@ -1,19 +1,9 @@
 const express = require("express");
 const path = require("path");
+const fs = require('fs');
+const { request } = require("http");
 
 const app = express();
-
-// PWAs want HTTPS!
-function checkHttps(request, response, next) {
-  // Check the protocol — if http, redirect to https.
-  if (request.get("X-Forwarded-Proto").indexOf("https") != -1) {
-    return next();
-  } else {
-    response.redirect("https://" + request.hostname + request.url);
-  }
-}
-
-app.all("*", checkHttps);
 
 // A test route to make sure the server is up.
 app.get("/api/ping", (request, response) => {
@@ -23,8 +13,21 @@ app.get("/api/ping", (request, response) => {
 
 // A mock route to return some data.
 app.get("/api/movies", (request, response) => {
-  console.log("❇️ Received GET request to /api/movies");
-  response.json({ data: [{ id: 1, name: '1' }, { id: 2, name: '2' }] });
+  let data = fs.readFileSync('./server/movies_metadata.json');
+  let movies = JSON.parse(data);
+  response.json(movies);
+});
+
+// A mock route to return data by id
+app.get("/api/movies/:id", (request, response) => {
+  let id = request.params.id;
+
+  let data = fs.readFileSync('./server/movies_metadata.json');
+  let movies = JSON.parse(data);
+  let movie = movies.filter((item, index) => {
+    return item.id == 862;
+  })[0]
+  response.json(movie);
 });
 
 // Express port-switching logic
