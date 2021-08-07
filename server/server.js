@@ -5,6 +5,12 @@ const { request } = require("http");
 
 const app = express();
 
+app.all('/*', function(req, res, next) {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Headers", "X-Requested-With");
+  next();
+});
+
 // A test route to make sure the server is up.
 app.get("/api/ping", (request, response) => {
   console.log("❇️ Received GET request to /api/ping");
@@ -25,7 +31,7 @@ app.get("/api/movies/:id", (request, response) => {
   let data = fs.readFileSync('./server/movies_metadata.json');
   let movies = JSON.parse(data);
   let movie = movies.filter((item, index) => {
-    return item.id == 862;
+    return item.id == id;
   })[0]
   response.json(movie);
 });
